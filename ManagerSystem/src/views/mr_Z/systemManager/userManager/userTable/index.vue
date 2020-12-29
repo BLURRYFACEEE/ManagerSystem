@@ -2,69 +2,53 @@
   <div class="userTableHold">
     <div class="cloth">
       <div class="searchRow">
-        <el-form ref="searchForm" :model="filterThings" :inline="true" label-width="180px" label-position="right">
-          登录账号：
-          <el-input
-            v-model="filterThings.ye[0].input"
-            placeholder="请输入内容"
-          />
-          真实姓名：
-          <el-input
-            v-model="filterThings.ye[1].input"
-            placeholder="请输入内容"
-          />
-          联系方式：
-          <el-input
-            v-model="filterThings.ye[2].input"
-            placeholder="请输入内容"
-          />
-          状态：
-          <el-input
-            v-model="filterThings.ye[3].input"
-            placeholder="请输入内容"
-          />
-          登录起始时间：
-          <el-input
-            v-model="filterThings.ye[4].input"
-            placeholder="请输入内容"
-          />
-          登录结束时间：
-          <el-input
-            v-model="filterThings.ye[5].input"
-            placeholder="请输入内容"
-          />
-          <el-button type="primary" @click="search">查询</el-button>
-          <el-button type="plain" @click="comeback">重置</el-button>
-          <el-button type="success" @click="getExcel(tableData)">导出EXCEL</el-button>
-        </el-form>
+        <search @searchDone="dealSearch" @searchReborn="searchBack" />
+        <!--                <el-form ref="searchForm" :model="filterThings.input" :inline="true" label-width="180px" label-position="right">-->
+        <!--                  登录账号：-->
+        <!--                  <el-input-->
+        <!--                    v-model="filterThings[0].input"-->
+        <!--                    maxlength="10"-->
+        <!--                    placeholder="请输入内容"-->
+        <!--                  />-->
+        <!--                  真实姓名：-->
+        <!--                  <el-input-->
+        <!--                    v-model="filterThings[1].input"-->
+        <!--                    maxlength="10"-->
+        <!--                    placeholder="请输入内容"-->
+        <!--                  />-->
+        <!--                  联系方式：-->
+        <!--                  <el-input-->
+        <!--                    v-model="filterThings[2].input"-->
+        <!--                    maxlength="10"-->
+        <!--                    placeholder="请输入内容"-->
+        <!--                  />-->
+        <!--                  状态：-->
+        <!--                  <el-input-->
+        <!--                    v-model="filterThings[3].input"-->
+        <!--                    maxlength="10"-->
+        <!--                    placeholder="请输入内容"-->
+        <!--                  />-->
+        <!--                  登录起始时间：-->
+        <!--                  <el-input-->
+        <!--                    v-model="filterThings[4].input"-->
+        <!--                    placeholder="请输入内容"-->
+        <!--                  />-->
+        <!--                  登录结束时间：-->
+        <!--                  <el-input-->
+        <!--                    v-model="filterThings[5].input"-->
+        <!--                    placeholder="请输入内容"-->
+        <!--                  />-->
+        <!--                  <el-button type="primary" @click="search">查询</el-button>-->
+        <!--                  <el-button type="plain" @click="comeback">重置</el-button>-->
+        <!--                  <el-button type="success" @click="getExcel(tableData)">导出EXCEL</el-button>-->
+        <!--                </el-form>-->
       </div>
       <div class="table">
         <div class="tableButtons">
-          <el-button type="primary" @click="dialogFormVisible = true">新增</el-button>
-          <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
-            <el-form :model="pushThings">
-              <el-form-item label="登录账号" :label-width="formLabelWidth">
-                <el-input v-model="pushThings.date" autocomplete="off" />
-              </el-form-item>
-              <el-form-item label="真实姓名" :label-width="formLabelWidth">
-                <el-input v-model="pushThings.name" autocomplete="off" />
-              </el-form-item>
-              <el-form-item label="联系方式" :label-width="formLabelWidth">
-                <el-input v-model="pushThings.address" autocomplete="off" />
-              </el-form-item>
-              <el-form-item label="最近登录时间" :label-width="formLabelWidth">
-                <el-input v-model="pushThings.login" autocomplete="off" />
-              </el-form-item>
-              <el-form-item label="状态" :label-width="formLabelWidth">
-                <el-input v-model="pushThings.tag" autocomplete="off" />
-              </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button @click="dialogFormVisible = false">取 消</el-button>
-              <el-button type="primary" @click="newPush">确 定</el-button>
-            </div>
-          </el-dialog>
-          <el-button type="primary">批量授权角色</el-button>
+
+          <shock-dialog ref="dialog1" :dialog-form-visible="dialogFormVisible" @dialogDataOut="dialogDataCome" />
+          <el-button type="primary" @click="addShow">新增</el-button>
+          <el-button type="info">批量授权角色</el-button>
         </div>
         <div class="tableContent">
           <el-table
@@ -198,18 +182,26 @@
 </template>
 
 <script>
+import shockDialog from '../../../../../components/mr_z/shockDialog/index'
+import search from '../../../../../components/mr_z/search/index'
+import { fetchList } from '@/api/article'
+
 export default {
   name: 'Index',
+  components: {
+    shockDialog,
+    search
+  },
   data() {
     return {
-      filterThings: { ye: [
+      filterThings: [
         { type: 'date', input: '' },
         { type: 'name', input: '' },
         { type: 'address', input: '' },
         { type: 'tag', input: '' },
         { type: 'startTime', input: '' },
         { type: 'endTime', input: '' }
-      ] },
+      ],
       perfectFilter: [{
       }],
       tableData: [{
@@ -280,12 +272,46 @@ export default {
       pageCutNum: 0,
       rowThing: {},
       rowThingCharge: {},
-      value1: []
+      value1: [],
+      listQuery: {
+        page: 1,
+        limit: 5,
+        type: this.type,
+        sort: '+id'
+      },
+      list: ''
     }
   },
   mounted() {
     this.backup = this.tableData
     this.pageCUt()
+    this.getList()
+    console.log(this.list)
+    // function ha() {
+    //   return new Promise(function(resolve, reject) {
+    //     setTimeout(function() {
+    //       resolve()
+    //     }, 1000)
+    //   })
+    // }
+    // function he() {
+    //   return new Promise(function(resolve, reject) {
+    //     setTimeout(function() {
+    //       resolve()
+    //     }, 3000)
+    //   })
+    // }
+    // var a = ha()
+    // var b = he()
+    // a.then(function success() {
+    //   console.log('success')
+    // }, function fail() {
+    //   console.log('fail')
+    // })
+    // const v = Promise.all([a, b])
+    // v.then(function success() {
+    //   console.log('也好了！')
+    // })
   },
   methods: {
     formatter(row, column) {
@@ -299,15 +325,12 @@ export default {
       return row[property] === value
     },
     search() {
-      console.log('hahahah')
-      // this.backup = this.tableData
-      const realthings = this.filterThings.ye.filter(item => {
+      // console.log('hahahah')
+      const realthings = this.filterThings.filter(item => {
         return item.input.length !== 0
       })
-      // console.log(realthings)
       const ha = this.tableData.filter((item, check) => {
         return realthings.every(function(value) {
-          // return item[value.type] === value.inpu
           if (value.type === 'startTime' || value.type === 'endTime') {
             const checkTime = (new Date(item.login).getTime() >= new Date(realthings[0].input).getTime()) || (item.login <= new Date(realthings[1].input).getTime())
             return checkTime
@@ -318,9 +341,6 @@ export default {
       })
       this.tableData = ha
       this.pageCUt()
-      console.log(this.tableData)
-      // console.log(ha)
-      // console.log(this.filterThings)
     },
     comeback() {
       this.tableData = this.backup
@@ -329,10 +349,10 @@ export default {
     newPush() {
       this.tableData.push(this.pushThings)
       this.backup = this.tableData
+      this.pageCUt()
       this.dialogFormVisible = false
     },
     deleteRow(index, rows) {
-      console.log(this.tableData)
       rows.splice(index, 1)
       this.pageCUt()
     },
@@ -341,7 +361,6 @@ export default {
     },
     // 进行分页处理
     pageCUt() {
-      // this.cutNum = Math.floor(this.tableData.length / 5)
       const lastCut = Math.floor(this.tableData.length / 5)
       this.pageCutNum = lastCut + 1
       this.pageTable.length = 0
@@ -383,6 +402,34 @@ export default {
       console.log(row)
       this.rowThingCharge.charge = this.value1
       this.dialogFormVisible3 = false
+    },
+    dialogDataCome(data) {
+      this.tableData.push(data)
+      this.backup = this.tableData
+      this.pageCUt()
+    },
+    // dialog组件的展示
+    addShow() {
+      this.$refs.dialog1.show()
+    },
+    // 搜索组件成功的返回函数
+    dealSearch(doneFilters) {
+      this.tableData = doneFilters
+      this.pageCUt()
+      // console.log('哈哈')
+    },
+    searchBack() {
+      this.tableData = this.backup
+      this.pageCUt()
+    },
+    getList() {
+      this.loading = true
+      this.$emit('create') // for test
+      fetchList(this.listQuery).then(response => {
+        this.list = response.data.items
+        console.log(this.list)
+        this.loading = false
+      })
     }
   }
 }
@@ -392,12 +439,10 @@ export default {
 .userTableHold {
   background-color: rgba(236, 240, 241,1);
   padding: 10px;
-  /*box-sizing: content-box;*/
 }
   .searchRow {
   }
   .searchRow .el-input {
-    /*display: inline-block;*/
     margin-top: 5px;
     width: 335px;
   }
@@ -413,6 +458,6 @@ export default {
     border-top: 1px solid #f0dacf;
     padding-top: 20px;
     padding-bottom: 20px;
-    min-height: 400px;
+    min-height: 600px;
   }
 </style>

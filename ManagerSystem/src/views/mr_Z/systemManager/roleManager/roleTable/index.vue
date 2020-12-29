@@ -121,14 +121,16 @@
                     <el-form-item label="系统名称" :label-width="formLabelWidth">
                       <el-input v-model="rowThingCharge.name" autocomplete="off" />
                     </el-form-item>
-                    <el-select v-model="value1" multiple placeholder="请选择">
-                      <el-option
-                        v-for="(item,index) in scope.row.charge"
-                        :key="index"
-                        :label="item"
-                        :value="item"
-                      />
-                    </el-select>
+                    <el-form-item label="菜单授权" :label-width="formLabelWidth">
+                      <el-select v-model="value1" multiple placeholder="请选择">
+                        <el-option
+                          v-for="(item,index) in roleMenuShow"
+                          :key="index"
+                          :label="item"
+                          :value="item"
+                        />
+                      </el-select>
+                    </el-form-item>
                   </el-form>
                   <div slot="footer" class="dialog-footer">
                     <el-button @click="dialogFormVisible3 = false">取 消</el-button>
@@ -160,6 +162,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
   name: 'Index',
   data() {
@@ -242,12 +245,42 @@ export default {
       pageCutNum: 0,
       rowThing: {},
       rowThingCharge: {},
-      value1: []
+      value1: [],
+      roleMenu: [],
+      roleMenuShow: []
     }
+  },
+  computed: {
+    ...mapGetters([
+      'sidebar',
+      'name',
+      'avatar',
+      'device',
+      'permission_routes'
+    ])
   },
   mounted() {
     this.backup = this.tableData
     this.pageCUt()
+    this.roleMenu = [...this.permission_routes]
+    this.roleMenu.forEach((topMenus) => {
+      // 判断每个顶级菜单是否拥有子菜单
+      // console.log(topMenus)
+      if (topMenus.meta) {
+        // console.log(topMenus.meta.title)
+        this.roleMenuShow.push(topMenus.meta.title)
+        if (topMenus.children) {
+          topMenus.children.forEach((childMenus) => {
+            this.roleMenuShow.push(childMenus.name)
+            // console.log(childMenus.name)
+          })
+        }
+      } else if (topMenus.children && topMenus.children[0].hasOwnProperty('meta')) {
+        this.roleMenuShow.push(topMenus.children[0].meta.title)
+        // console.log(topMenus.children[0].meta.title)
+      }
+    })
+    // console.log(this.roleMenuShow)
   },
   methods: {
     formatter(row, column) {
@@ -261,7 +294,7 @@ export default {
       return row[property] === value
     },
     search() {
-      console.log('hahahah')
+      // console.log('hahahah')
       // this.backup = this.tableData
       const realthings = this.filterThings.ye.filter(item => {
         return item.input.length !== 0
