@@ -1,13 +1,16 @@
 <template>
   <div>
-    <roleTable></roleTable>
+    <roleTable />
   </div>
 </template>
 
 <script>
 import roleTable from './roleTable/index.vue'
 export default {
-  name: "index"
+  name: 'Index',
+  components: {
+    roleTable
+  }
 }
 </script>
 

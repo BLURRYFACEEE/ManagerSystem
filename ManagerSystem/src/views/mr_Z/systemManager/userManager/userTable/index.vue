@@ -279,7 +279,7 @@ export default {
       cutNum: 0,
       pageCutNum: 0,
       rowThing: {},
-      rowThingCharge:{},
+      rowThingCharge: {},
       value1: []
     }
   },
@@ -299,6 +299,7 @@ export default {
       return row[property] === value
     },
     search() {
+      console.log('hahahah')
       // this.backup = this.tableData
       const realthings = this.filterThings.ye.filter(item => {
         return item.input.length !== 0
@@ -316,11 +317,14 @@ export default {
         })
       })
       this.tableData = ha
+      this.pageCUt()
+      console.log(this.tableData)
       // console.log(ha)
       // console.log(this.filterThings)
     },
     comeback() {
       this.tableData = this.backup
+      this.pageCUt()
     },
     newPush() {
       this.tableData.push(this.pushThings)

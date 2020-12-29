@@ -120,11 +120,20 @@ export const constantRoutes = [
     },
     children: [
       {
-        path: 'page',
+        path: 'userManager',
         component: () => import('@/views/mr_Z/systemManager/userManager'),
         name: 'userManager',
         meta: {
           title: 'userManager',
+          roles: ['admin'] // or you can only set roles in sub nav
+        }
+      },
+      {
+        path: 'roleManager',
+        component: () => import('@/views/mr_Z/systemManager/roleManager'),
+        name: 'roleManager',
+        meta: {
+          title: 'roleManager',
           roles: ['admin'] // or you can only set roles in sub nav
         }
       }
